@@ -110,7 +110,8 @@ sequenceDiagram
 ```
 ------------------------------------------------------------
 ### 📸 Screenshots
-
+#### Home Page
+![Home Page](UI/home.png)
 ---------------------------------------------
 ### 🧠 Backend Project Structure
     src/main/java/com.stock_trading_engine
