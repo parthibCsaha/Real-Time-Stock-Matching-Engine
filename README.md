@@ -1,5 +1,5 @@
 # 📈 Real-Time Stock Matching Engine (Full Stack)
----
+
 [![Java](https://img.shields.io/badge/Java-17%2B-blue.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?logo=spring-boot)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-blue?logo=postgresql)](https://www.postgresql.org/)
@@ -8,9 +8,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
 
 ### 🚀 Project Overview
-    This is a full-stack, real-time stock trading engine that simulates the core backend mechanics of a modern stock exchange.
-    It implements a price–time priority limit order book, supports BUY/SELL orders, partial fills, trade execution, and delivers live market updates to clients using WebSockets.
-    This project focuses on backend system design, concurrency, and real-time data flow, rather than just CRUD operations.
+   This is a full-stack, real-time stock trading engine that simulates the core backend mechanics of a modern stock exchange.It implements a price–time priority limit order book, supports BUY/SELL orders, partial fills, trade execution,     and delivers live market updates to clients using WebSockets.This project focuses on backend system design, concurrency, and real-time data flow, rather than just CRUD operations.
 ---
 ### ⭐ Key Features
   ### 📊 Trading Engine (Backend Core)
