@@ -1,0 +1,18 @@
+# ===== Backend =====
+backend/target/
+backend/*.log
+
+# ===== Frontend =====
+frontend/node_modules/
+frontend/dist/
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+
+# ===== OS =====
+.DS_Store
+
+# ===== Env =====
+.env
