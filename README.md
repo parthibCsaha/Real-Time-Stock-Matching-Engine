@@ -97,10 +97,20 @@ flowchart TB
 ## 📊 Data Model (ER Diagram)
 ```mermaid
 erDiagram
-    ORDER ||--o{ TRADE : "participates_in"
+    ORDERBOOK ||--|{ ORDER : "contains"
+    ORDER }o--o{ TRADE : "participates_in"
+    
+    ORDERBOOK {
+        String symbol PK
+        PriorityQueue buyOrders
+        PriorityQueue sellOrders
+        ReentrantLock lock
+        Map activeOrders
+    }
+    
     ORDER {
         String id PK
-        String symbol
+        String symbol FK
         OrderType type
         BigDecimal price
         Long quantity
@@ -120,14 +130,6 @@ erDiagram
         LocalDateTime timestamp
         String buyerId
         String sellerId
-    }
-    
-    ORDERBOOK {
-        String symbol PK
-        PriorityQueue buyOrders
-        PriorityQueue sellOrders
-        ReentrantLock lock
-        Map activeOrders
     }
 ```
 -------------------------------------------------------
