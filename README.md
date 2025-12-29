@@ -34,8 +34,7 @@
    - Market statistics bar
 ---
 ### 🏗️ System Architecture
-``` mermaid
-flowchart TB
+``` mermaidflowchart TB
     subgraph Client["🌐 Frontend (React + Vite)"]
         UI[User Interface]
         OrderForm[Order Form]
@@ -76,7 +75,7 @@ flowchart TB
     WSConfig --> MatchingEngine
     
     MatchingEngine --> OBManager
-    MatchingEngine -->|@Async| TradeService
+    MatchingEngine --> TradeService
     
     OBManager --> OrderBook
     OrderBook --> PQBuy
