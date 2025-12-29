@@ -142,25 +142,25 @@ sequenceDiagram
     participant WebSocket
     participant Database
 
-    Client->>Controller: POST /api/orders<br/>{symbol, type, price, quantity}
+    Client->>Controller: POST /api/orders with order data
     Controller->>MatchingEngine: processOrder(order)
     MatchingEngine->>OrderBook: addOrder(order)
     
     activate OrderBook
-    Note over OrderBook: lock.lock()
-    OrderBook->>OrderBook: buyOrders.offer(order)<br/>O(log n)
-    OrderBook->>OrderBook: match()
+    Note over OrderBook: Acquire lock
+    OrderBook->>OrderBook: Insert order O(log n)
+    OrderBook->>OrderBook: Run match loop
     
     loop While bestBuy >= bestSell
         OrderBook->>OrderBook: executeTrade()
-        Note over OrderBook: Update quantities<br/>Create Trade object
+        Note over OrderBook: Update quantities and Create Trade
     end
     
-    Note over OrderBook: lock.unlock()
-    OrderBook-->>MatchingEngine: List&lt;Trade&gt;
+    Note over OrderBook: Release lock
+    OrderBook-->>MatchingEngine: Return List of Trades
     deactivate OrderBook
     
-    MatchingEngine->>TradeService: saveTrades(trades)<br/>@Async
+    MatchingEngine->>TradeService: saveTrades(trades) Async
     activate TradeService
     TradeService->>Database: INSERT trades
     deactivate TradeService
@@ -172,7 +172,7 @@ sequenceDiagram
     WebSocket-->>Client: Order book update
     
     MatchingEngine-->>Controller: OrderResponse
-    Controller-->>Client: {orderId, status, trades}
+    Controller-->>Client: Response with orderId and status
 ```
 ------------------------------------------------------------
 ### 📸 Screenshots
