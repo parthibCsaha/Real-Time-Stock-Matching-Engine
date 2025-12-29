@@ -34,7 +34,8 @@
    - Market statistics bar
 ---
 ### 🏗️ System Architecture
-``` mermaidflowchart TB
+``` mermaid
+flowchart TB
     subgraph Client["🌐 Frontend (React + Vite)"]
         UI[User Interface]
         OrderForm[Order Form]
