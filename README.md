@@ -9,7 +9,7 @@
 
 ### 🚀 Project Overview
 
-   This is a full-stack, real-time stock trading engine that simulates the core backend mechanics of a modern stock exchange.It implements a price–time priority limit order book, supports BUY/SELL orders, partial fills, trade execution,     and delivers live market updates to clients using WebSockets.This project focuses on backend system design, concurrency, and real-time data flow, rather than just CRUD operations.
+   This is a full-stack, real-time stock trading engine that simulates the core backend mechanics of a modern stock exchange. It implements a price–time priority limit order book, supports BUY/SELL orders, partial fills, trade execution,     and delivers live market updates to clients using WebSockets.This project focuses on backend system design, concurrency, and real-time data flow, rather than just CRUD operations.
    
 -----------------------------------------------------------------------------------------
 ### ⭐ Key Features
@@ -35,78 +35,144 @@
 ---
 ### 🏗️ System Architecture
 ``` mermaid
-flowchart LR
+flowchart TB
+    subgraph Client["🌐 Frontend (React + Vite)"]
+        UI[User Interface]
+        OrderForm[Order Form]
+        OrderBookViz[Order Book Visualization]
+        TradeHistory[Trade History]
+        WSClient[WebSocket Client]
+    end
 
-  %% ================= CLIENT =================
-  subgraph Client["🌐 Frontend (React + Vite)"]
-    UI["Trading UI"]
-  end
+    subgraph Backend["⚙️ Backend (Spring Boot)"]
+        subgraph Controllers
+            OrderController[OrderController<br/>REST API]
+            WSConfig[WebSocketConfig<br/>STOMP Endpoint]
+        end
+        
+        subgraph Services
+            MatchingEngine[MatchingEngineService<br/>Orchestration]
+            TradeService[TradeService<br/>Persistence]
+        end
+        
+        subgraph Core["🔥 Core Matching Engine"]
+            OBManager[OrderBookManager<br/>Multi-Symbol]
+            OrderBook[OrderBook<br/>Single Symbol]
+            PQBuy[PriorityQueue<br/>Buy Orders - Max Heap]
+            PQSell[PriorityQueue<br/>Sell Orders - Min Heap]
+            Lock[ReentrantLock<br/>Thread Safety]
+        end
+    end
 
-  %% ================= SERVER =================
-  subgraph Server["⚙️ Backend (Spring Boot)"]
-    OrderController["OrderController"]
-    MatchingEngine["MatchingEngineService"]
-    OrderBook["OrderBook"]
-    WebSocket["WebSocket Layer"]
-    TradeService["TradeService"]
-  end
+    subgraph Database["🗄️ PostgreSQL"]
+        TradeTable[(trades)]
+    end
 
-  %% ================= DATABASE =================
-  subgraph DB["🗄 PostgreSQL"]
-    TradeTable[(trades)]
-  end
+    UI --> OrderController
+    UI <--> WSClient
+    WSClient <--> WSConfig
+    
+    OrderController --> MatchingEngine
+    WSConfig --> MatchingEngine
+    
+    MatchingEngine --> OBManager
+    MatchingEngine -->|@Async| TradeService
+    
+    OBManager --> OrderBook
+    OrderBook --> PQBuy
+    OrderBook --> PQSell
+    OrderBook --> Lock
+    
+    TradeService --> TradeTable
+    
+    MatchingEngine -.->|Broadcast| WSConfig
+    WSConfig -.->|Push Updates| WSClient
 
-  %% ================= FLOW =================
-  UI -->|REST| OrderController
-  OrderController --> MatchingEngine
-  MatchingEngine --> OrderBook
-  MatchingEngine --> TradeService
-  TradeService --> TradeTable
-
-  MatchingEngine --> WebSocket
-  WebSocket --> UI
+    style Core fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style OrderBook fill:#ffd93d,stroke:#f5a623,color:#000
+    style PQBuy fill:#6bcf7f,stroke:#38a169,color:#000
+    style PQSell fill:#6bcf7f,stroke:#38a169,color:#000
 ```
 ---
 ## 📊 Data Model (ER Diagram)
 ```mermaid
 erDiagram
-  ORDER ||--o{ TRADE : generates
-
-  ORDER {
-    Long id
-    String symbol
-    Double price
-    Integer quantity
-    OrderType type
-    OrderStatus status
-    LocalDateTime timestamp
-  }
-
-  TRADE {
-    Long id
-    Double price
-    Integer quantity
-    LocalDateTime executedAt
-  }
+    ORDER ||--o{ TRADE : "participates_in"
+    ORDER {
+        String id PK
+        String symbol
+        OrderType type
+        BigDecimal price
+        Long quantity
+        Long remainingQuantity
+        LocalDateTime timestamp
+        OrderStatus status
+        String userId
+    }
+    
+    TRADE {
+        String id PK
+        String symbol
+        String buyOrderId FK
+        String sellOrderId FK
+        BigDecimal price
+        Long quantity
+        LocalDateTime timestamp
+        String buyerId
+        String sellerId
+    }
+    
+    ORDERBOOK {
+        String symbol PK
+        PriorityQueue buyOrders
+        PriorityQueue sellOrders
+        ReentrantLock lock
+        Map activeOrders
+    }
 ```
 -------------------------------------------------------
 ### 🔁 Order Matching Flow (Price–Time Priority)
 ```mermaid
 sequenceDiagram
-  participant Trader
-  participant UI
-  participant Controller
-  participant Engine
-  participant OrderBook
-  participant DB
+    participant Client
+    participant Controller
+    participant MatchingEngine
+    participant OrderBook
+    participant TradeService
+    participant WebSocket
+    participant Database
 
-  Trader ->> UI: Place BUY / SELL order
-  UI ->> Controller: POST /orders
-  Controller ->> Engine: submitOrder()
-  Engine ->> OrderBook: attemptMatch()
-  OrderBook -->> Engine: matched trades
-  Engine ->> DB: persist trades (async)
-  Engine ->> UI: WebSocket update (order book + trades)
+    Client->>Controller: POST /api/orders<br/>{symbol, type, price, quantity}
+    Controller->>MatchingEngine: processOrder(order)
+    MatchingEngine->>OrderBook: addOrder(order)
+    
+    activate OrderBook
+    Note over OrderBook: lock.lock()
+    OrderBook->>OrderBook: buyOrders.offer(order)<br/>O(log n)
+    OrderBook->>OrderBook: match()
+    
+    loop While bestBuy >= bestSell
+        OrderBook->>OrderBook: executeTrade()
+        Note over OrderBook: Update quantities<br/>Create Trade object
+    end
+    
+    Note over OrderBook: lock.unlock()
+    OrderBook-->>MatchingEngine: List&lt;Trade&gt;
+    deactivate OrderBook
+    
+    MatchingEngine->>TradeService: saveTrades(trades)<br/>@Async
+    activate TradeService
+    TradeService->>Database: INSERT trades
+    deactivate TradeService
+    
+    MatchingEngine->>WebSocket: broadcast trades
+    WebSocket-->>Client: Trade notifications
+    
+    MatchingEngine->>WebSocket: broadcast order book
+    WebSocket-->>Client: Order book update
+    
+    MatchingEngine-->>Controller: OrderResponse
+    Controller-->>Client: {orderId, status, trades}
 ```
 ------------------------------------------------------------
 ### 📸 Screenshots
