@@ -181,6 +181,18 @@ sequenceDiagram
 #### Home Page
 ![Home Page](UI/home.png)
 ---------------------------------------------
+### 🔌 API Endpoints
+   ### Orders
+   - POST /api/orders – Place a BUY / SELL limit order
+   - DELETE /api/orders/{symbol}/{orderId} – Cancel an existing order
+   - GET /api/orderbook/{symbol} – Get current order book snapshot for a symbol
+   ### Trades
+   - GET /api/trades/{symbol}?limit=50 – Get recent executed trades for a symbol
+   ### WebSocket
+   - /ws – WebSocket connection endpoint
+   - /topic/orderbook/{symbol} – Live order book updates
+   - /topic/trades/{symbol} – Live trade execution updates
+------------------------------------------------------------------------------------
 ### 🧠 Backend Project Structure
     src/main/java/com.stock_trading_engine
      ├── config
@@ -217,18 +229,6 @@ sequenceDiagram
        │   └── websocket.js
        └── App.jsx
 --------------------------------------------
-### 🔌 API Endpoints
-   ### Orders
-   - POST /api/orders – Place a BUY / SELL limit order
-   - DELETE /api/orders/{symbol}/{orderId} – Cancel an existing order
-   - GET /api/orderbook/{symbol} – Get current order book snapshot for a symbol
-   ### Trades
-   - GET /api/trades/{symbol}?limit=50 – Get recent executed trades for a symbol
-   ### WebSocket
-   - /ws – WebSocket connection endpoint
-   - /topic/orderbook/{symbol} – Live order book updates
-   - /topic/trades/{symbol} – Live trade execution updates
-------------------------------------------------------------------------------------
 ### ⚙️ Tech Stack
    ### Backend
    - Java 17
