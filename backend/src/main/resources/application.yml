@@ -17,13 +17,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  task:
-    execution:
-      pool:
-        core-size: 4
-        max-size: 8
-        queue-capacity: 100
-
 server:
   port: 8080
 
