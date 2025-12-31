@@ -105,43 +105,56 @@ flowchart TB
 ---
 ## 📊 Data Model (ER Diagram)
 ```mermaid
-erDiagram
-    direction LR
-
-    ORDERBOOK ||--|{ ORDER : contains
-    ORDER }o--o{ TRADE : participates_in
-
-    ORDERBOOK {
-        String symbol PK
-        PriorityQueue buyOrders
-        PriorityQueue sellOrders
-        ReentrantLock lock
-        Map activeOrders
+classDiagram
+    class Order {
+        +String id
+        +String symbol
+        +OrderType type
+        +BigDecimal price
+        +Long quantity
+        +Long remainingQuantity
+        +LocalDateTime timestamp
+        +OrderStatus status
+        +String userId
+        +compareTo(Order) int
+        +isActive() boolean
     }
-
-    ORDER {
-        String id PK
-        String symbol FK
-        OrderType type
-        BigDecimal price
-        Long quantity
-        Long remainingQuantity
-        LocalDateTime timestamp
-        OrderStatus status
-        String userId
+    
+    class OrderBook {
+        -String symbol
+        -PriorityQueue~Order~ buyOrders
+        -PriorityQueue~Order~ sellOrders
+        -ReentrantLock lock
+        -Map~String,Order~ activeOrders
+        +addOrder(Order) List~Trade~
+        +match() List~Trade~
+        +cancelOrder(String) boolean
     }
-
-    TRADE {
-        String id PK
-        String symbol
-        String buyOrderId FK
-        String sellOrderId FK
-        BigDecimal price
-        Long quantity
-        LocalDateTime timestamp
-        String buyerId
-        String sellerId
+    
+    class OrderBookManager {
+        -ConcurrentHashMap~String,OrderBook~ orderBooks
+        +getOrderBook(String) OrderBook
+        +addOrder(Order) List~Trade~
     }
+    
+    class Trade {
+        +String id
+        +String symbol
+        +String buyOrderId
+        +String sellOrderId
+        +BigDecimal price
+        +Long quantity
+        +LocalDateTime timestamp
+    }
+    
+    OrderBookManager "1" --> "*" OrderBook : manages
+    OrderBook "1" --> "*" Order : contains
+    OrderBook "1" ..> "*" Trade : creates
+    Order "*" --> "*" Trade : participates in
+
+    note for OrderBook "In-Memory Only\n(Not persisted)"
+    note for Order "In-Memory Only\n(Not persisted)"
+    note for Trade "Persisted to PostgreSQL\n(Historical record)"
 
 ```
 -------------------------------------------------------
