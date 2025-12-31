@@ -106,9 +106,11 @@ flowchart TB
 ## 📊 Data Model (ER Diagram)
 ```mermaid
 erDiagram
-    ORDERBOOK ||--|{ ORDER : "contains"
-    ORDER }o--o{ TRADE : "participates_in"
-    
+    direction LR
+
+    ORDERBOOK ||--|{ ORDER : contains
+    ORDER }o--o{ TRADE : participates_in
+
     ORDERBOOK {
         String symbol PK
         PriorityQueue buyOrders
@@ -116,7 +118,7 @@ erDiagram
         ReentrantLock lock
         Map activeOrders
     }
-    
+
     ORDER {
         String id PK
         String symbol FK
@@ -128,7 +130,7 @@ erDiagram
         OrderStatus status
         String userId
     }
-    
+
     TRADE {
         String id PK
         String symbol
@@ -140,6 +142,7 @@ erDiagram
         String buyerId
         String sellerId
     }
+
 ```
 -------------------------------------------------------
 ### 🔁 Order Matching Flow (Price–Time Priority)
