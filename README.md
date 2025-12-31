@@ -106,6 +106,8 @@ flowchart TB
 ## 📊 Data Model (ER Diagram)
 ```mermaid
 classDiagram
+    direction LR
+
     class Order {
         +String id
         +String symbol
@@ -119,7 +121,7 @@ classDiagram
         +compareTo(Order) int
         +isActive() boolean
     }
-    
+
     class OrderBook {
         -String symbol
         -PriorityQueue~Order~ buyOrders
@@ -130,13 +132,13 @@ classDiagram
         +match() List~Trade~
         +cancelOrder(String) boolean
     }
-    
+
     class OrderBookManager {
         -ConcurrentHashMap~String,OrderBook~ orderBooks
         +getOrderBook(String) OrderBook
         +addOrder(Order) List~Trade~
     }
-    
+
     class Trade {
         +String id
         +String symbol
@@ -146,7 +148,7 @@ classDiagram
         +Long quantity
         +LocalDateTime timestamp
     }
-    
+
     OrderBookManager "1" --> "*" OrderBook : manages
     OrderBook "1" --> "*" Order : contains
     OrderBook "1" ..> "*" Trade : creates
