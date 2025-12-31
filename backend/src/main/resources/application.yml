@@ -21,6 +21,9 @@ server:
   port: 8080
 
 logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
   level:
     com.stock_trading_engine: INFO
     org.springframework.messaging: DEBUG
