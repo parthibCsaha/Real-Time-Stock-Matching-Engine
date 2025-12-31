@@ -49,19 +49,19 @@ flowchart TB
     subgraph Server["⚙️ Backend (Spring Boot 3)"]
         OrderController["OrderController<br/>(REST API)"]
         WSConfig["WebSocketConfig<br/>(STOMP Broker)"]
-        
+
         MatchingEngine["MatchingEngineService<br/>(Orchestration)"]
         TradeService["TradeService<br/>(Persistence)"]
-        
+
         subgraph Core["🔥 Core Matching Engine"]
             OBManager["OrderBookManager<br/>(Multi-Symbol)"]
             OrderBook["OrderBook<br/>(Single Symbol)"]
-            
+
             subgraph DataStructures["Data Structures"]
                 PQBuy["PriorityQueue<br/>Buy Orders<br/>(Max-Heap)"]
                 PQSell["PriorityQueue<br/>Sell Orders<br/>(Min-Heap)"]
             end
-            
+
             Lock["ReentrantLock<br/>(Thread Safety)"]
             ConcurrentMap["ConcurrentHashMap<br/>(Symbol Isolation)"]
         end
@@ -78,27 +78,29 @@ flowchart TB
     UI --> TradeHistory
     OrderForm --> OrderController
     UI <--> WSClient
-    
+
     WSClient <--> WSConfig
     OrderController --> MatchingEngine
     WSConfig --> MatchingEngine
-    
+
     MatchingEngine --> OBManager
-    MatchingEngine -->|@Async| TradeService
-    
+    MatchingEngine -->|Async Execution| TradeService
+
     OBManager --> ConcurrentMap
     ConcurrentMap --> OrderBook
     OrderBook --> PQBuy
     OrderBook --> PQSell
     OrderBook --> Lock
-    
+
     TradeService --> TradeTable
     MatchingEngine -.->|Broadcast| WSConfig
     WSConfig -.->|Push Updates| WSClient
 
+    %% ======================= STYLES ======================
     style Core fill:#ff6b6b,stroke:#c92a2a,color:#fff
     style DataStructures fill:#ffd93d,stroke:#f5a623,color:#000
     style OrderBook fill:#6bcf7f,stroke:#38a169,color:#000
+
 ```
 ---
 ## 📊 Data Model (ER Diagram)
