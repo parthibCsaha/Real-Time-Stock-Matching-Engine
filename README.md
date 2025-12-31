@@ -105,67 +105,52 @@ flowchart TB
 ---
 ## 📊 Data Model (ER Diagram)
 ```mermaid
-classDiagram
-    direction LR
-
+flowchart LR
     %% ===== Row 1 =====
     subgraph Row1[" "]
         direction TB
-        class Order {
-            +String id
-            +String symbol
-            +OrderType type
-            +BigDecimal price
-            +Long quantity
-            +Long remainingQuantity
-            +LocalDateTime timestamp
-            +OrderStatus status
-            +String userId
-            +compareTo(Order) int
-            +isActive() boolean
-        }
-
-        class Trade {
-            +String id
-            +String symbol
-            +String buyOrderId
-            +String sellOrderId
-            +BigDecimal price
-            +Long quantity
-            +LocalDateTime timestamp
-        }
+        Order["Order<br/>
+        ─────────<br/>
+        id<br/>
+        symbol<br/>
+        type<br/>
+        price<br/>
+        quantity<br/>
+        remainingQuantity<br/>
+        timestamp<br/>
+        status<br/>
+        userId"]
+        
+        Trade["Trade<br/>
+        ─────────<br/>
+        id<br/>
+        symbol<br/>
+        buyOrderId<br/>
+        sellOrderId<br/>
+        price<br/>
+        quantity<br/>
+        timestamp"]
     end
 
     %% ===== Row 2 =====
     subgraph Row2[" "]
         direction TB
-        class OrderBook {
-            -String symbol
-            -PriorityQueue~Order~ buyOrders
-            -PriorityQueue~Order~ sellOrders
-            -ReentrantLock lock
-            -Map~String,Order~ activeOrders
-            +addOrder(Order) List~Trade~
-            +match() List~Trade~
-            +cancelOrder(String) boolean
-        }
-
-        class OrderBookManager {
-            -ConcurrentHashMap~String,OrderBook~ orderBooks
-            +getOrderBook(String) OrderBook
-            +addOrder(Order) List~Trade~
-        }
+        OrderBook["OrderBook<br/>
+        ─────────<br/>
+        symbol<br/>
+        buyOrders<br/>
+        sellOrders<br/>
+        lock<br/>
+        activeOrders"]
+        
+        OrderBookManager["OrderBookManager<br/>
+        ─────────<br/>
+        orderBooks"]
     end
 
-    %% ===== Relationships =====
-    OrderBookManager "1" --> "*" OrderBook : manages
-    OrderBook "1" --> "*" Order : contains
-    OrderBook ..> Trade : creates
-
-    %% ===== Notes =====
-    note for OrderBook "In-Memory Only\n(Not persisted)"
-    note for Order "In-Memory Only\n(Not persisted)"
-    note for Trade "Persisted to PostgreSQL\n(Historical record)"
+    OrderBookManager --> OrderBook
+    OrderBook --> Order
+    OrderBook -.-> Trade
 
 ```
 -------------------------------------------------------
