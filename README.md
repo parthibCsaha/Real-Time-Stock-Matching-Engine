@@ -108,52 +108,61 @@ flowchart TB
 classDiagram
     direction LR
 
-    class Order {
-        +String id
-        +String symbol
-        +OrderType type
-        +BigDecimal price
-        +Long quantity
-        +Long remainingQuantity
-        +LocalDateTime timestamp
-        +OrderStatus status
-        +String userId
-        +compareTo(Order) int
-        +isActive() boolean
-    }
+    %% ===== Row 1 =====
+    subgraph Row1[" "]
+        direction TB
+        class Order {
+            +String id
+            +String symbol
+            +OrderType type
+            +BigDecimal price
+            +Long quantity
+            +Long remainingQuantity
+            +LocalDateTime timestamp
+            +OrderStatus status
+            +String userId
+            +compareTo(Order) int
+            +isActive() boolean
+        }
 
-    class OrderBook {
-        -String symbol
-        -PriorityQueue~Order~ buyOrders
-        -PriorityQueue~Order~ sellOrders
-        -ReentrantLock lock
-        -Map~String,Order~ activeOrders
-        +addOrder(Order) List~Trade~
-        +match() List~Trade~
-        +cancelOrder(String) boolean
-    }
+        class Trade {
+            +String id
+            +String symbol
+            +String buyOrderId
+            +String sellOrderId
+            +BigDecimal price
+            +Long quantity
+            +LocalDateTime timestamp
+        }
+    end
 
-    class OrderBookManager {
-        -ConcurrentHashMap~String,OrderBook~ orderBooks
-        +getOrderBook(String) OrderBook
-        +addOrder(Order) List~Trade~
-    }
+    %% ===== Row 2 =====
+    subgraph Row2[" "]
+        direction TB
+        class OrderBook {
+            -String symbol
+            -PriorityQueue~Order~ buyOrders
+            -PriorityQueue~Order~ sellOrders
+            -ReentrantLock lock
+            -Map~String,Order~ activeOrders
+            +addOrder(Order) List~Trade~
+            +match() List~Trade~
+            +cancelOrder(String) boolean
+        }
 
-    class Trade {
-        +String id
-        +String symbol
-        +String buyOrderId
-        +String sellOrderId
-        +BigDecimal price
-        +Long quantity
-        +LocalDateTime timestamp
-    }
+        class OrderBookManager {
+            -ConcurrentHashMap~String,OrderBook~ orderBooks
+            +getOrderBook(String) OrderBook
+            +addOrder(Order) List~Trade~
+        }
+    end
 
+    %% ===== Relationships =====
     OrderBookManager "1" --> "*" OrderBook : manages
     OrderBook "1" --> "*" Order : contains
-    OrderBook "1" ..> "*" Trade : creates
-    Order "*" --> "*" Trade : participates in
+    OrderBook ..> Trade : creates
 
+    %% ===== Notes =====
     note for OrderBook "In-Memory Only\n(Not persisted)"
     note for Order "In-Memory Only\n(Not persisted)"
     note for Trade "Persisted to PostgreSQL\n(Historical record)"
