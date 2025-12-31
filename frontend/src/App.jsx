@@ -58,7 +58,8 @@ function App() {
                 volume: trades.reduce((sum, t) => sum + t.quantity, 0)
               } : { lastPrice: 0, totalTrades: 0, volume: 0 }
             };
-          } catch {
+          } 
+          catch {
             return {
               symbol,
               orderBook: { symbol, buyOrders: [], sellOrders: [] },
@@ -122,7 +123,7 @@ function App() {
               <Activity className="w-8 h-8 text-emerald-400" />
               <div>
                 <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                  Stock Market Engine
+                  Wall Street 
                 </h1>
                 <p className="text-slate-400 text-sm">Real-time Limit Order Book & Trade Execution</p>
               </div>
