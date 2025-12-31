@@ -36,62 +36,69 @@
 ### 🏗️ System Architecture
 ``` mermaid
 flowchart TB
+    %% ======================= CLIENT ======================
     subgraph Client["🌐 Frontend (React + Vite)"]
-        UI[User Interface]
-        OrderForm[Order Form]
-        OrderBookViz[Order Book Visualization]
-        TradeHistory[Trade History]
-        WSClient[WebSocket Client]
+        UI["User Interface"]
+        OrderForm["Order Form"]
+        OrderBookViz["Order Book<br/>Visualization"]
+        TradeHistory["Trade History"]
+        WSClient["WebSocket Client<br/>(STOMP)"]
     end
 
-    subgraph Backend["⚙️ Backend (Spring Boot)"]
-        subgraph Controllers
-            OrderController[OrderController<br/>REST API]
-            WSConfig[WebSocketConfig<br/>STOMP Endpoint]
-        end
+    %% ======================= BACKEND ======================
+    subgraph Server["⚙️ Backend (Spring Boot 3)"]
+        OrderController["OrderController<br/>(REST API)"]
+        WSConfig["WebSocketConfig<br/>(STOMP Broker)"]
         
-        subgraph Services
-            MatchingEngine[MatchingEngineService<br/>Orchestration]
-            TradeService[TradeService<br/>Persistence]
-        end
+        MatchingEngine["MatchingEngineService<br/>(Orchestration)"]
+        TradeService["TradeService<br/>(Persistence)"]
         
         subgraph Core["🔥 Core Matching Engine"]
-            OBManager[OrderBookManager<br/>Multi-Symbol]
-            OrderBook[OrderBook<br/>Single Symbol]
-            PQBuy[PriorityQueue<br/>Buy Orders - Max Heap]
-            PQSell[PriorityQueue<br/>Sell Orders - Min Heap]
-            Lock[ReentrantLock<br/>Thread Safety]
+            OBManager["OrderBookManager<br/>(Multi-Symbol)"]
+            OrderBook["OrderBook<br/>(Single Symbol)"]
+            
+            subgraph DataStructures["Data Structures"]
+                PQBuy["PriorityQueue<br/>Buy Orders<br/>(Max-Heap)"]
+                PQSell["PriorityQueue<br/>Sell Orders<br/>(Min-Heap)"]
+            end
+            
+            Lock["ReentrantLock<br/>(Thread Safety)"]
+            ConcurrentMap["ConcurrentHashMap<br/>(Symbol Isolation)"]
         end
     end
 
-    subgraph Database["🗄️ PostgreSQL"]
+    %% ======================= DATABASE ======================
+    subgraph DB["🗄️ PostgreSQL"]
         TradeTable[(trades)]
     end
 
-    UI --> OrderController
+    %% ======================= CONNECTIONS ======================
+    UI --> OrderForm
+    UI --> OrderBookViz
+    UI --> TradeHistory
+    OrderForm --> OrderController
     UI <--> WSClient
-    WSClient <--> WSConfig
     
+    WSClient <--> WSConfig
     OrderController --> MatchingEngine
     WSConfig --> MatchingEngine
     
     MatchingEngine --> OBManager
-    MatchingEngine --> TradeService
+    MatchingEngine -->|@Async| TradeService
     
-    OBManager --> OrderBook
+    OBManager --> ConcurrentMap
+    ConcurrentMap --> OrderBook
     OrderBook --> PQBuy
     OrderBook --> PQSell
     OrderBook --> Lock
     
     TradeService --> TradeTable
-    
     MatchingEngine -.->|Broadcast| WSConfig
     WSConfig -.->|Push Updates| WSClient
 
     style Core fill:#ff6b6b,stroke:#c92a2a,color:#fff
-    style OrderBook fill:#ffd93d,stroke:#f5a623,color:#000
-    style PQBuy fill:#6bcf7f,stroke:#38a169,color:#000
-    style PQSell fill:#6bcf7f,stroke:#38a169,color:#000
+    style DataStructures fill:#ffd93d,stroke:#f5a623,color:#000
+    style OrderBook fill:#6bcf7f,stroke:#38a169,color:#000
 ```
 ---
 ## 📊 Data Model (ER Diagram)
