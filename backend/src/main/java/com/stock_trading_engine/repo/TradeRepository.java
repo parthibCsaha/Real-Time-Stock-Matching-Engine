@@ -10,6 +10,5 @@ import java.util.List;
 @Repository
 public interface TradeRepository extends JpaRepository<Trade, String> {
 
-    // Fixed: removed "Top" - Pageable handles the limit
     List<Trade> findBySymbolOrderByTimestampDesc(String symbol, Pageable pageable);
 }
